@@ -1,0 +1,190 @@
+%% Module: Bank Capital
+
+!variables
+
+    "Return on assets (incurred loss-based allowances)" rtae
+    "Bank capital" bk
+    "Regulatory CT1 capital" reg
+    "Regulatory CT1 capital to bank capital ratio" reg_to_bk
+    "Bank capital, opening balance" bk0
+    "Capital adequacy ratio" car
+    "Target CAR" car_tar
+    "Regulatory minimum CAR" car_min
+    "Counter-cyclical capital buffer" car_ccy
+    "Conservatory capital buffer" car_cons
+    "External capital flows" xcf_to_bk
+    "Other assets" oae
+    "Other assets share on nominal GDP" oae_to_4ny
+    "Total gross assets" tag
+    "Total net assets" tae
+    "Funding liabilities" d
+    "Return on bank capital" rbk
+    "Risk weights" riskw
+    "Risk weighted assets" rwa
+    "Funding liabilities, opening balances" d0
+
+
+!log-variables !all-but
+
+    rtae, rbk
+    car, car_tar, car_min, car_ccy, car_cons
+    xcf_to_bk
+    oae_to_4ny
+    riskw
+    sec_to_4ny, new_sec_to_4ny
+    reg_to_bk
+
+
+!shocks
+
+    "Shock to counter-cyclical capital buffer" shock_car_ccy
+    "Shock to conservatory capital buffer" shock_car_cons
+    "Shock to bank capital" shock_bk
+    "Shock to level of other assets" shock_oae_to_4ny
+    "Shock to risk weights" shock_rw
+    "Shock to regulatory CT1 to bank capital ratio" shock_reg_to_bk
+    "Shock to external capital flows" shock_xcf_to_bk
+
+
+!parameters
+
+    "Degree of external capital flows sensitivity to profits" c1_xcf
+    "Regulatory minimum CAR floor" floor_car_min
+    "A/R Counter-cyclical capital buffer" c0_car_ccy
+    "A/R Conservatory capital buffer" c0_car_cons
+    "S/S excess CAR held by the banks" car_exs
+    "S/S counter-cyclical capital buffer" ss_car_ccy
+    "S/S conservatory capital buffer" ss_car_cons
+    "S/S risk weights" ss_riskw
+    "A/R Risk weights" c0_riskw
+    "S/S Other net income to total net assets" ss_oni_to_tae
+    "S/S Other assets to nominal GDP" ss_oae_to_4ny
+    "A/R Other assets to nominal GDP" c0_oae_to_4ny
+    c0_reg_to_bk
+    ss_reg_to_bk
+
+
+!substitutions-postprocessor
+
+    !for <1:K> !do
+          prof_int_loans_? := (rl_?{-1}*(lp0_? + lnc0_?));
+    !end
+    prof_int_loans := (!for <1:K> !do + $prof_int_loans_?$ !end);
+    prof_int_sec := (book_sec{-1} * rsec{-1});
+    prof_int_oae := (roae{-1} * oae{-1});
+    prof_int_liab := (-rd{-1} * d0);
+    prof_val_sec := (sec{-1} * (val_sec - 1));
+    prof_prov := (!for <1:K> !do -(a_? - a_?{-1} + w_?) !end);
+    prof_other := (ss_oni_to_tae * tae{-1});
+
+
+!equations
+
+    "Return on net assets"
+    rtae*tae{-1} = rbk*bk{-1};
+
+
+    "Return on bank capital"
+    rbk*bk{-1} = ...
+          + $prof_int_loans$ ...
+          + $prof_int_sec$ ...
+          + $prof_int_oae$ ...
+          + $prof_int_liab$ ...
+          + $prof_val_sec$ ...
+          + $prof_prov$ ...
+          + $prof_other$;
+
+
+    "Bank capital, opening balance"
+    bk0 = bk{-1} + rbk*bk{-1};
+
+
+    "Bank capital accumulation"
+    bk = bk0 + xcf_to_bk*bk + shock_bk*bk0;
+
+
+    "External capital flows"
+    (1-c1_xcf)*(xcf_to_bk - &xcf_to_bk - shock_xcf_to_bk) = -c1_xcf*(car - car_tar) ...
+    !! car = car_tar;
+
+
+    "Risk weighted assets"
+    rwa = riskw * tae;
+
+
+    "Regulatory Tier 1 capital to bank capital ratio"
+    reg_to_bk = ...
+        + c0_reg_to_bk * reg_to_bk{-1} ...
+        + (1 - c0_reg_to_bk) * ss_reg_to_bk ...
+        + shock_reg_to_bk ...
+    !! reg_to_bk = ss_reg_to_bk;
+
+
+    "Regulatory Tier 1 capital"
+    reg = reg_to_bk * bk;
+
+
+    "Capital adequacy ratio"
+    car = reg / rwa;
+
+
+    "Risk weights"
+    riskw = ...
+        + c0_riskw * riskw{-1} ...
+        + (1 - c0_riskw) * ss_riskw ...
+        + shock_rw ...
+    !! riskw = ss_riskw;
+
+
+    "Target CAR"
+    car_tar = car_min + car_exs;
+
+
+    "Regulatory minimum CAR"
+    car_min = floor_car_min + car_ccy + car_cons;
+
+
+    "Conservation capital buffer"
+    car_cons = ...
+        + c0_car_cons * car_cons{-1} ...
+        + (1 - c0_car_cons) * ss_car_cons ...
+        + shock_car_cons ...
+    !! car_cons = ss_car_cons;
+
+
+    "Counter-cyclical capital buffer"
+    car_ccy = ...
+        + c0_car_ccy * car_ccy{-1} ...
+        + (1 - c0_car_ccy) * ss_car_ccy ...
+        + shock_car_ccy ...
+    !! car_ccy = ss_car_ccy;
+
+
+    "Other net assets"
+    oae_to_4ny = oae / (4*ny);
+
+
+    "Other net assets to GDP ratio"
+    oae_to_4ny = ...
+        + c0_oae_to_4ny * oae_to_4ny{-1} ...
+        + (1 - c0_oae_to_4ny) * ss_oae_to_4ny ...
+        + shock_oae_to_4ny ...
+    !! oae_to_4ny = ss_oae_to_4ny;
+
+
+    "Balance sheet identity"
+    l + sec + oae - a = d + bk;
+
+
+    "Total gross assets"
+    tag = l + sec + oae;
+
+
+    "Total net assets"
+    tae = l + oae + sec - a;
+
+
+    "Funding liabilities, opening balances"
+    d0 = d{-1};
+
+

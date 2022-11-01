@@ -1,0 +1,33 @@
+!variables
+
+    "Fixed income secs" sec
+    "Fixed income secs, Opening balance" sec0
+    "Amortized cost value of fixed income secs" book_sec
+    "Change in price of fixed income secs" val_sec
+
+
+!parameters
+
+    "Inverse maturity of fixed income secs portfolio" theta_sec
+    "Inverse duration of fixed income secs portfolio" theta_secdur
+
+
+!equations
+
+    "Fixed income secs held by the banks, Opening balance"
+    sec0 = sec{-1} * val_sec;
+
+    "Fixed income secs held by the banks"
+    sec = ...
+        + sec0 ...
+        - theta_sec * book_sec{-1} ...
+        + new_sec_to_4ny * (4*ny);
+
+    "Amortized cost value of fixed income secs"
+    book_sec = (1 - theta_sec) * book_sec{-1} + new_sec_to_4ny * (4*ny) ...
+    !! book_sec = sec;
+
+%     val_sec = (1 - theta_sec) * ((1 + rp)/(1 + rp{-1}))^(-theta_secdur) ...
+%     !! val_sec = 1;
+    val_sec = (book_sec{-1}/sec{-1})^0.5;
+

@@ -1,0 +1,119 @@
+%% Module: Macro
+
+
+!variables
+
+    "Nominal output" ny
+    "Nominal output, Q/Q" roc_ny
+    "Real output" y
+    "Consumer prices" cpi
+    "Consumer prices, Q/Q" roc_cpi
+    "Output deflator" py
+    "Output deflator, Q/Q" roc_py
+    "Output gap" y_gap
+    "Output trend" y_tnd
+    "Output trend, Q/Q" roc_y_tnd
+    "Policy rate" rp
+    "Discounted forward sum of real GDP" fws_y
+
+
+!log-variables !all-but
+    rp
+
+
+!shocks
+
+    shock_y_gap
+    shock_roc_y_tnd
+    shock_roc_cpi
+    shock_roc_py
+    shock_rp
+
+    tune_y_gap
+    tune_roc_y_tnd
+    tune_roc_cpi
+    tune_rp
+
+
+!parameters
+
+    c0_y_gap, c1_y_gap
+    c0_roc_y_tnd
+    c0_roc_cpi
+    c0_rp
+
+
+    "Discount rate for the future income streams" ss_disc_fws_y
+    "Impact on lending conditions in fsw_y" c1_fws_y
+
+    % Direct steady state parameters
+    ss_roc_y_tnd
+    ss_roc_cpi
+    ss_rp
+
+
+!equations
+
+% Output
+
+    y = y_gap * y_tnd;
+
+    ny = y * py;
+
+    log(y_gap) =
+        + c0_y_gap * log(y_gap{-1}) ...
+        - c1_y_gap * 4 * new_rl_full_gap ...
+        + tune_y_gap ...
+        + shock_y_gap ...
+    !! y_gap = 1;
+
+    log(roc_y_tnd) = ...
+        + c0_roc_y_tnd * log(roc_y_tnd{-1}) ...
+        + (1 - c0_roc_y_tnd) * log(ss_roc_y_tnd) ...
+        + tune_roc_y_tnd ...
+        + shock_roc_y_tnd
+    !! roc_y_tnd = ss_roc_y_tnd;
+
+
+    % Proxy for asset prices (claims on future gdp)
+    "Discounted forward sum of real GDP, normalized to current"
+    fws_y = ...
+        + (1 - 1/(1 + ss_disc_fws_y)) * y ...
+        + 1/(1 + ss_disc_fws_y + c1_fws_y*new_rl_full_gap) * fws_y{+1}/ss_roc_y_tnd ...
+    !! fws_y = y;
+
+
+% Consumer prices
+
+    log(roc_cpi) = ...
+        + c0_roc_cpi * log(roc_cpi{-1}) ...
+        + (1 - c0_roc_cpi) * log(ss_roc_cpi) ...
+        + tune_roc_cpi ...
+        + shock_roc_cpi ...
+    !! roc_cpi = ss_roc_cpi;
+
+
+% GDP deflator
+
+    log(roc_py) = log(roc_cpi) + shock_roc_py ...
+    !! roc_py = roc_cpi;
+
+
+% Short-rate rate
+
+    rp = ...
+       + c0_rp * rp{-1} ...
+       + (1 - c0_rp) * ss_rp ...
+       + tune_rp ...
+       + shock_rp ...
+    !! rp = ss_rp;
+
+
+% Rates of change
+
+    roc_cpi = cpi / cpi{-1};
+    roc_py = py / py{-1};
+    roc_ny = ny / ny{-1};
+    roc_y_tnd = y_tnd / y_tnd{-1};
+
+

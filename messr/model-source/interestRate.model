@@ -1,0 +1,193 @@
+%% Module: Interest Rates
+
+%% Aggregate variables
+!variables
+
+    "Average new lending rate with partial risk pass-through" new_rl
+    "Average new lending rate with full risk pass-through" new_rl_full
+    "Average effective lending spread gap" new_rl_full_gap
+    "Average stock lending rate" rl
+    "New funding rate" new_rd
+    "Stock funding rate" rd
+    "Capital adequacy risk surcharge" rx
+    "Return on other assets" roae
+    "Return on bonds" rsec
+
+
+!log-variables !all-but
+
+    new_rl, rl, new_rd, rd
+    new_rl_full, new_rl_full_gap
+    rx
+    roae, rsec
+
+
+!shocks
+
+    "Shock to new lending rate" shock_new_rl
+    "Shock to new funding rate" shock_new_rd
+    "Shock to stock lending rate" shock_rl
+    "Shock to stock funding rate" shock_rd
+    "Shock to capital adequacy risk surcharge" shock_rx
+    "Shock to return on other assets" shock_roae
+    "Shock to return on bonds" shock_rsec
+    "Shock to lending rate w/ full risk passthrough" shock_new_rl_full
+
+
+!parameters
+
+    "Autonomous profit margin on other assets" ss_roae_apm
+    "Autonomous profit margin on bonds" ss_rsec_apm
+    "Autonomous profit margin" ss_rd_apm
+    "Duration of funding interest rate fix" psi_rd
+    c1_rx, c2_rx, c3_rx, c4_rx, c5_rx
+
+
+!equations
+
+    "Average new lending rate with full risk pass-through"
+    new_rl_full = ( ...
+        !for <1:K> !do + new_rl_full_? * new_l_? !end ...
+    ) / new_l;
+
+
+    "Shadow lending rate gap"
+    new_rl_full_gap = ( 
+        !for <1:K> !do + new_rl_full_gap_? * &new_l_? !end ...
+    ) / &new_l ...
+    !! new_rl_full_gap = 0;
+
+
+    "Average new lending rate with partial risk pass-through"
+    new_rl = (!for <1 : K> !do + new_rl_? * new_l_? !end) / new_l;
+
+
+    "Stock lending rate"
+    rl = (!for <1 : K> !do + rl_? * (lp_?+lnc_?) !end) / (lp+lnc);
+
+
+    "Capital adequacy risk surcharge"
+    rx = glogc1(-(car - car_min), c1_rx, c2_rx, c3_rx, c4_rx, c5_rx) + shock_rx;
+
+    "Return on other assets"
+    roae = rp + ss_roae_apm + shock_roae;
+
+    "Return on bonds"
+    rsec = rp + ss_rsec_apm + shock_rsec;
+
+    "New funding rate, ?"
+    new_rd = rp + ss_rd_apm + shock_new_rd;
+
+    "Stock funding rate, ?"
+    rd = (1 - psi_rd) * rd{-1} + psi_rd * new_rd + shock_rd ...
+    !! rd = new_rd ;
+
+
+%% Loan segments
+
+
+!for
+    ? = <1 : K>
+!do
+
+    !variables
+
+        "Base lending rate, ?" rl_base_?
+        "New lending rate with partial risk pass-through, ?" new_rl_?
+        "New lending rate w/ full risk pass-through excluding rx" new_rl_full0_?
+        "Impact of capital adequacy risk surcharge on lending rate, ?" new_rl_full1_?
+        % "Impact of inverse leverage risk surcharge on lending rate, ?" new_rl_full2_?
+        "New lending rate with full risk pass-through, ?" new_rl_full_?
+        "Effective lending spread gap, ?" new_rl_full_gap_?
+        "Stock lending rate, ?" rl_?
+        "Measure of bank lending tightness, ?" new_rl_full_spread_?
+        "Stock lending spread, ?" rl_spread_rp_?
+
+
+    !log-variables !all-but
+
+        new_rl_?, rl_?, rl_base_?
+        new_rl_full0_?, new_rl_full1_?, new_rl_full_?, %new_rl_full2_?,
+        new_rl_full_gap_?, new_rl_full_spread_?
+        rl_spread_rp_?
+
+
+    !shocks
+
+        "Shock to new lending rate, ?" shock_new_rl_?
+        "Shock to stock lending rate, ?" shock_rl_?
+        "Shock to new funding rate,?" shock_new_rd_?
+        "Shock to stock funding rate, ?" shock_rd_?
+        "Shock to lending conditions, ?" shock_new_rl_full_gap_?
+        "Shock to lending rate w/ full risk passthrough" shock_new_rl_full_?
+
+
+    !parameters
+
+        "Autonomous profit margin on loans, ?" ss_rl_apm_?
+        "Duration of lending interest rate fix, ?" psi_rl1_?
+        "Degree of fw-lookiness wrt rx, ?" psi_rl2_?
+        "Degree of risk pass-through to market lending rates, ?" c_rl_new_?
+
+
+    !substitutions
+
+        Psi1_? := ((1 - psi_rl1_?)*(1 - theta_lp_?));
+        Psi2_? := ((1 - psi_rl2_?)*(1 - theta_lp_?));
+
+
+    !equations
+
+        "Base lending rate, ?"
+        rl_base_? = rp + ss_rl_apm_?;
+
+        "New lending rate with full risk pass-through, excl. rx, ?"
+        1 + new_rl_full0_? = ...
+            + (1 - $Psi1_?$) * (1 + rl_base_?)/(1 - lambda_? * q_?{+1})
+            + $Psi1_?$ * (1 + new_rl_full0_?{+1});
+
+
+        "Impact of capital adequacy risk surcharge on lending rate, ?"
+        1 + new_rl_full1_? = ...
+            + (1 - $Psi2_?$) * (1 + rx) ...
+            + $Psi2_?$ * (1 + new_rl_full1_?{+1}) ...
+        !! new_rl_full1_? = rx;
+
+
+        "Total new lending rate with full risk pass-through, ?"
+        1 + new_rl_full_? = ...
+            + (1 + new_rl_full0_?) * (1 + new_rl_full1_?) ... 
+            + shock_new_rl_full_? ...
+            + shock_new_rl_full;
+
+
+        "Shadow lending rate gap, ?"
+        new_rl_full_gap_? = ...
+            + new_rl_full_spread_? - &new_rl_full_spread_? ...
+            + shock_new_rl_full_gap_? ...
+        !! new_rl_full_gap_? = 0;
+
+
+        "Shadow lending rate spread, ?"
+        new_rl_full_spread_? = new_rl_full_? - (rp - shock_rp - tune_rp);
+
+
+        "New lending rate with partial risk pass-through, ?"
+        new_rl_? = ...
+            + rl_base_? ...
+            + c_rl_new_? * (new_rl_full_? - rl_base_?) ...
+            + (1-c_rl_new_?) * (&new_rl_full_? - &rl_base_?);
+
+
+        "Stock lending rate, ?"
+        rl_? = ...
+            + rl_?{-1} ...
+            + [psi_rl1_?*(1-theta_lp_?)*lp0_? + new_l_?]/lp_?*(new_rl_?-rl_?{-1}) ...
+            + shock_rl_?;
+
+
+        "Stock lending spread, ?"
+        rl_spread_rp_? = rl_? - rp;
+
+!end
+

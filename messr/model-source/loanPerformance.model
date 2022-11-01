@@ -1,0 +1,196 @@
+%% Module: Loan Performance
+
+%% Aggregate variables
+!variables
+
+    "Total gross loans" l
+    "Loans to GDP ratio" l_to_4ny
+    "Performing loans" lp
+    "Nonperforming loans" ln
+    "Newly nonperforming loans" new_ln
+    "Nonperforming loans - recovery buffer" lnc
+    "Nonperforming loans - write-off buffer" lnw
+    "Nonperforming loans - recovery buffer, opening" lnc0
+    "Peforming loans, opening balance" lp0
+    "Write-offs" w
+    "Nonperforming loans to gross loans ratio" ln_to_l
+    "Allowances (fw-looking, IFRS9)" a9
+    "Allowances (loss-based)" a
+    "Allowances (fw-looking) to total loans" a9_to_l
+    "Allowances (loss-based) to total loans" a_to_l
+
+!log-variables !all-but
+
+    l_to_4ny
+    ln_to_l
+    a9_to_l
+    a_to_l
+
+
+!shocks
+
+    "Shock to write-offs" shock_w
+
+
+!equations
+
+    "Total gross loans"
+    l = !for <1:K> !do + l_? !end;
+
+    "Non-performing loans"
+    ln = !for <1:K> !do + ln_? !end;
+
+    "Performing loans"
+    lp = !for <1:K> !do + lp_? !end;
+
+    "Performing loans, opening balance"
+    lp0 = !for <1:K> !do + lp0_? !end;
+
+    "Newly nonperforming loans"
+    new_ln = !for <1:K> !do + new_ln_? !end;
+
+    "Nonperforming loans - recovery buffer"
+    lnc = !for <1:K> !do + lnc_? !end;
+
+    "Nonperforming loans - recovery buffer, opening balance"
+    lnc0 = !for <1:K> !do + lnc0_? !end;
+
+    "Nonperforming loans - write-off buffer"
+    lnw = !for <1:K> !do + lnw_? !end;
+
+    "Write-offs"
+    w = !for <1:K> !do + w_? !end;
+
+    "Allowances (IFRS9)"
+    a9 = !for <1:K> !do + a9_? !end;
+
+    "Incurred Loss-Based Allowances"
+    a = !for <1:K> !do + a_? !end;
+
+    "NPL share"
+    ln_to_l  = ln / l;
+
+    "Credit-to-GDP ratio"
+    l_to_4ny = l / (4*ny);
+
+    "Allowances to total loans ratio"
+    a9_to_l  = a9 / l;
+
+    "Allowances to total loans ratio"
+    a_to_l   = a / l;
+
+
+%% Loan portfolio segments
+
+!for
+   ? = <1 : K>
+!do
+
+    !variables
+        "Total gross loans, ?" l_?
+        "Loans to GDP ratio, ?" l_to_4ny_?
+        "Performing loans, ?" lp_?
+        "Peforming loans, opening balance, ?" lp0_?
+        "Nonperforming loans, ?" ln_?
+        "Newly nonperforming loans, ?" new_ln_?
+        "Nonperforming loans - recovery buffer, ?" lnc_?
+        "Nonperforming loans - recovery buffer, opening, ?" lnc0_?
+        "Nonperforming loans - write-off buffer, ?" lnw_?
+        "Nonperforming loans - recovery buffer, opening, ?" lnw0_?
+        "Write-offs, ?" w_?
+        "Nonperforming loans to gross loans ratio, ?" ln_to_l_?
+        "Present Value of Contractual Cashflow, ?" pvc_?
+        "Present Value of Expected Cashflow, ?" pvx_?
+        "Allowances (fw-looking, IFRS9), ?" a9_?
+        "Allowances (loss-based), ?" a_?
+        "Allowances (fw-looking) to total loans, ?" a9_to_l_?
+        "Allowances (loss-based) to total loans, ?" a_to_l_?
+
+
+    !log-variables !all-but
+        l_to_4ny_?
+        ln_to_l_?
+        a9_to_l_?
+        a_to_l_?
+
+
+    !parameters
+
+        "Paydown rate, ?" theta_lp_?
+        "Loss given default, ?" lambda_?
+        "Recovery rate on nonperforming loans, ?" theta_ln_?
+        "Write-off rate, ?" omega_?
+        "S/S Share of incurred-loss allowances in NPLs, ?" ss_a_to_ln_?
+        "A/R Incurred-loss allowances, ?" c0_a_?
+
+
+    !shocks
+
+        "Shock to write-offs, ?" shock_w_?
+        "Shock to incurred-loss provisions" shock_a_?
+
+
+    !equations
+
+        "Total gross loans"
+        l_? = lp_? + ln_?;
+
+        "Non-performing loans"
+        ln_? = lnc_? + lnw_?;
+
+        "Performing loans, opening balance"
+        lp0_? = lp_?{-1} - new_ln_?;
+
+        "Perfoming loans"
+        lp_? = (1 - theta_lp_?) * lp0_? + new_l_?;
+
+        "Newly nonperforming loans"
+        new_ln_? = q_?*lp0_?;
+
+        "Nonperforming loans - recovery buffer, opening balance"
+        lnc0_? = lnc_?{-1} + (1 - lambda_?) * new_ln_?;
+
+        "Nonperforming loans - write-off buffer, opening balance"
+        lnw0_? = lnw_?{-1} + lambda_? * new_ln_?;
+
+        "Nonperforming loans - recovery buffer"
+        lnc_? = (1 - theta_ln_?) * lnc0_?;
+
+        "Nonperforming loans - write-off buffer"
+        lnw_? = lnw0_? - w_?;
+
+        "Write-offs"
+        w_? = omega_? * lnw0_? * exp(shock_w_?)*exp(shock_w);
+
+        "Present Value of Contractual Cash from Unit Sized Loan"
+        pvc_? = 1;
+
+        "Present Value of Expected Cash from Unit Sized Loan"
+        pvx_? = ...
+            + (1-q_?{+1})/(1+rl_?) * [theta_lp_? + rl_? + (1-theta_lp_?)*pvx_?{+1}] ...
+            + (1 - lambda_?) * q_?{+1};
+
+        "Allowances (IFRS9)"
+        a9_? = pvc_?*l_? - pvx_?*(lp_? + lnc_?);
+
+        "Incurred Loss-Based Allowances, ?"
+        log(a_?) = ...
+            + c0_a_? * log(a_?{-1} * &roc_ny) ...
+            + (1 - c0_a_?) * log(ss_a_to_ln_? * ln_?) ...
+            + shock_a_? ...
+        !! a_? = ss_a_to_ln_? * ln_?;
+
+        "NPL ratio, ?"
+        ln_to_l_?  = ln_? / l_?;
+
+        "Loan to GDP ratio, ?"
+        l_to_4ny_? = l_? / (4*ny);
+
+        "Allowances to total loans ratio, ?"
+        a9_to_l_?  = a9_? / l_?;
+
+        "Allowances to total loans ratio, ?"
+        a_to_l_?   = a_? / l_?;
+
+!end
+
