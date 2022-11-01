@@ -1,0 +1,243 @@
+%% Create and calibrate model object from model source files 
+
+%% Clear workspace 
+
+% close all
+clear
+
+if ~exist("mat", "dir")
+    mkdir mat
+end
+
+
+%% Read model 
+
+% list of files (model modules) to be included
+modelFiles = [ ...
+    "+model/creditCreation.model"
+    "+model/loanPerformance.model"
+    "+model/creditRisk.model"
+    "+model/interestRate.model"
+    "+model/bankCapital.model"
+    "+model/macro.model"
+%     "+model/macro2.model"
+%     "+model/macroConnector.model"
+ ];
+
+% how many loan segments we create
+numSegments = 1;
+
+m = Model.fromFile( ...
+    modelFiles ...
+    , "assign", struct("K", numSegments, "onlyMacro", false) ...
+    , "growth", true ...
+    , "saveAs", "parsed.model" ...
+);
+
+
+p = struct();
+
+%% Macro block
+
+% macro steady-states
+p.ss_roc_y_tnd  = exp(2/400);
+p.ss_roc_cpi    = exp(2/400);
+p.ss_rp         = 2/400;
+
+% additional parameters
+p.c1_fws_y      = 0.25;  % Impact on lending conditions in fsw_y
+p.ss_disc_fws_y = 0.05; % Discount rate for the future income streams
+
+p.c2_dl_y_tnd   = 0.05; % output gap
+p.c0_y_gap    = 0.65; % lag
+p.c1_y_gap    = 4*0.10; % bank lending tightness
+
+%% Credit creation block 
+
+p.ss_ivy_1 = 1;     % sstate inverse velocity of credit 
+% p.ss_ivy_2 = 1;     % sstate inverse velocity of credit
+
+p.c1_trn_1   = 0.5; % weight on today's output in trn
+% p.c1_trn_2   = 0.5; % weight on today's output in trn
+
+p.c0_ivy_1   = 0.85; % persistence
+p.c1_ivy_1   = 0.40; % loan-to-GDP trend
+p.c2_ivy_1   = 4*1.1;  % lending conditions
+
+% p.c0_ivy_2   = 0.85; % persistence
+% p.c1_ivy_2   = 0.05; % loan-to-GDP trend
+% p.c2_ivy_2   = 0.30; % lending conditions
+
+p.c0_l_to_4ny_tnd_1 = 0.99; % loan-to-GDP trend persistence
+% p.c0_l_to_4ny_tnd_2 = 0.99; % loan-to-GDP trend persistence
+
+
+%% Loan performance block 
+
+p.theta_lp_1  = 1 / (5*4);   % inverse average perf. loan maturity
+% p.theta_lp_2  = 1 / (2.5*4); % inverse average perf. loan maturity
+
+p.theta_ln_1  = 1 / (5*4);   % inverse average nonperf. loan maturity
+% p.theta_ln_2  = 1 / (2.5*4); % inverse average perf. loan maturity
+
+p.ss_lambda_1    = 0.6;         % LGD
+% p.ss_lambda_2    = 0.5;         % LGD 
+
+p.omega_1     = 0.15;        % write-offs as a share of NPLs
+% p.omega_2     = 0.10;        % write-offs as a share of NPLs
+
+p.c_a_to_ln_1 = 0.675;       % Share of incurred loss-based allowances on NPLs
+% p.c_a_to_ln_2 = 0.675;       % Share of incurred loss-based allowances on NPLs
+
+p.oie_to_tag  = -1.6/400; % general expense items: operations, taxes, ...
+
+%% Credit risk block 
+
+% parameters of the credit risk function
+p.c1_q_1 = 0.017;
+p.c2_q_1 = 0.056;
+p.c3_q_1 = 2.21;
+p.c4_q_1 = 0.005;
+p.c6_q_1 = 0.15;
+
+p.c1_lambda_1 = -0.002;
+p.c2_lambda_1 = 0.023;
+p.c3_lambda_1 = -0.6;
+p.c4_lambda_1 = -0.05;
+p.c5_lambda_1 = 0.1;
+
+p.c1_z_1 = 0.50; % weight on credit overhang
+p.c2_z_1 = 0.10; % weight on repi gap
+
+%% Interest rate block 
+
+p.ss_rl_apm_1 =  0.8/400;
+% p.ss_rl_apm_2 =  4/400;
+
+p.ss_rd_apm   = -1.5/400;
+
+p.ss_roas_apm  = 1.0/400;
+p.ss_roras_apm = 1.0/400;
+
+p.ss_rb_apm   = 0.3/400;
+
+p.psi_rl1_1   = 1/(2*4);
+p.psi_rl2_1   = 1/(2);
+
+
+p.psi_rd      = 1/2;
+
+p.c_rl_new_1  = 0.25; % degree of risk pass-through to the new lending rates
+% p.c_rl_new_2  = 0.25; % degree of risk pass-through to the new lending rates
+
+p.c1_rx =  2/400;
+p.c2_rx =  0.007;
+p.c3_rx =  0.50;
+p.c4_rx = -2/400;
+p.c5_rx =  0.5/400;
+
+p.c1_rx2 =  2/400;
+p.c2_rx2 =  0.007;
+p.c3_rx2 =  0.50;
+p.c4_rx2 = -2/400;
+p.c5_rx2 =  0.5/400;
+
+p.c1_cap_lcr = 0.005;
+p.c2_cap_lcr = 0.04;
+p.c3_cap_lcr =-1.00;
+p.c4_cap_lcr =-0.00;
+p.c5_cap_lcr = 0.015;
+
+
+%% Bank capital
+
+p.c1_xcf         = 0.5; 
+p.floor_car_min  = 0.12; % Regulatory minimum CAR floor
+p.car_exs        = 0.03; % sstate excess capital held by the banks
+
+p.c1_car_bfr     = 0.95;
+p.ss_car_bfr     = 0.00; % sstate counter-cyclical capital buffer
+
+p.c1_car_cons    = 0.95;
+p.ss_car_cons    = 0.00; % sstate conservatory capital buffer
+
+p.ss_oas_to_4ny  = 0.25; % about 25% GDP share 
+p.rho_oas_to_4ny = 0.98; 
+
+p.ss_oras_to_4ny = 0.08; % about 8% GDP share 
+p.rho_oras_to_4ny= 0.98; 
+
+p.rho_rw         = 0.85;
+p.ss_rw          = 0.87;
+
+p.invlev_min     = 0.03;
+
+p.ss_lcr         = 1.70; 
+p.c_lcr          = 0.75;
+p.lcr_min        = 1.00;
+
+p.c1_reid        = 0.90; % autoregression in idiosyncratic component of real estate prices
+p.c1_repi        = 0.85;
+
+p.theta_b        = 1/8;  % inverse maturity of bond portfolio held by banks
+p.theta_bdur     = 1/4;  % inverse duration of bond portfolio held by banks - should be higher than theta_b
+p.c_new_b        = 0.05; % elastisticity of new bond purchases to bonds-to-GDP gap
+p.ss_b_to_4ny    = 0.16; % sstate bonds to GDP ratio
+
+%% Calculate steady state
+
+% Reverse engineering
+
+p.l_to_4ny_1   = 0.80;  % sstate loan-to-GDP ratio
+p.ln_to_l_1    = 0.08;  % sstate NPL ratio
+p.new_l_to_4ny = 0.06;  % approximate ratio of new loans to nominal GDP
+p.b_to_4ny     = p.ss_b_to_4ny;  % sstate ratio of bonds to nominal GDP
+p.lambda_1     = p.ss_lambda_1;
+
+m = assign(m, p);
+
+swaps = [
+    "l_to_4ny_1",       "ss_ivy_1"
+    "new_l_to_4ny",     "theta_lp_1"
+    "ln_to_l_1",        "c4_q_1"
+    "b_to_4ny",         "ss_new_b_to_4ny"
+    "lambda_1",         "c1_lambda_1"
+];
+
+m = steady( ...
+    m ...
+    , "exogenize", swaps(:, 1) ...
+    , "endogenize", swaps(:, 2) ...
+);
+
+checkSteady(m);
+
+table(m, ["SteadyLevel", "SteadyChange", "Form", "Description"])
+
+
+%% Calculate first order solution matrices
+
+m = solve(m);
+
+%% Visualize credit risk function
+ss = get(m,'steady');
+figure();
+z = linspace(-0.10, 0.10, 100)';
+
+f1 = glogc(-z, -ss.c1_q_1, ss.c2_q_1, ss.c3_q_1, ss.c4_q_1, ss.c4_q_1+ss.c6_q_1);
+
+plot(z, f1);
+grid on
+
+xline(0, "lineWidth", 2);
+
+title("Credit risk function");
+
+h = xlabel("Macro conditions index");
+ylabel("Effect on portfolio default rate, PP annualized");
+
+
+%% Save model to mat file
+
+save mat/createModel.mat m n
+

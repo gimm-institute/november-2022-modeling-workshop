@@ -1,0 +1,13 @@
+
+!variables
+    new_rl_full_gap
+
+!shocks
+    shk_new_rl_full_gap
+
+!log-variables !all-but
+    new_rl_full_gap
+
+!equations
+    new_rl_full_gap = shk_new_rl_full_gap;
+

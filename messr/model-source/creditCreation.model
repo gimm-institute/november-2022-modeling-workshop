@@ -1,0 +1,152 @@
+%% Module: Credit creation
+
+
+%% Aggregate variables
+
+
+!variables
+
+    "New loans" new_l
+    "New loans to GDP" new_l_to_4ny
+    "Loans to GDP Ratio Trend" l_to_4ny_tnd
+    "Net loans to GDP Ratio Trend" le_to_4ny
+    "Book value of bonds to GDP" sec_to_4ny
+    "Book value of newly purchased bonds to GDP" new_sec_to_4ny
+
+
+!parameters
+
+    "S/S New fixed income secs acquisition to nominal GDP" ss_new_sec_to_4ny
+    "S/S Fixed income secs to nominal GDP" ss_sec_to_4ny
+
+    "Elasticity of new fixed income secs acquisition" c1_new_sec
+
+
+!log-variables !all-but
+
+    new_l_to_4ny, l_to_4ny_tnd
+    new_sec_to_4ny, sec_to_4ny
+    le_to_4ny
+
+
+!shocks
+
+    "Shock to new loans" shock_new_l
+    "Shock to inverse velocity of credit" shock_ivy
+    "Shock to gross loans to gdp ratio trend" shock_l_to_4ny_tnd
+    "Shock to new fixed income secs acquisition" shock_new_sec_to_4ny
+
+
+!equations
+
+
+    % Bank loans
+
+
+    "New Loans"
+    new_l = !for <1 : K> !do + new_l_? !end;
+
+
+    "Gross Loans to GDP Ratio Trend"
+    l_to_4ny_tnd = !for <1 : K> !do + l_to_4ny_tnd_? !end;
+
+    le_to_4ny = (l - a) / (4*ny);
+
+    "New loans to GDP ratio"
+    new_l_to_4ny = new_l/(4*ny);
+
+
+    % Fixed income securities
+
+
+    "New fixed income secs acquired by the banks"
+    new_sec_to_4ny = ...
+        + ss_new_sec_to_4ny - c1_new_sec * (sec_to_4ny - &sec_to_4ny) ...
+        + shock_new_sec_to_4ny ...
+    !! new_sec_to_4ny = ss_new_sec_to_4ny;
+
+
+    "Share of bonds held by the banks on GDP"
+    sec_to_4ny = sec / (4*ny);
+
+
+%% Loan portfolio segments
+
+
+!for
+    ? = <1 : K>
+!do
+  !variables
+
+      "New loans, ?" new_l_?
+      "New loans to GDP, ?" new_l_to_4ny_?
+      "New loans to total loans, ?" new_l_to_l_?
+      "Macroeconomic Transactions, ?" trn_?
+      "Inverse Velocity of New Loans, ?" ivy_?
+      "Loans to GDP Ratio Trend, ?" l_to_4ny_tnd_?
+
+
+  !log-variables !all-but
+
+      new_l_to_4ny_?, l_to_4ny_tnd_?, new_l_to_l_?
+
+
+  !shocks
+
+      "Shock to new loans, ?" shock_new_l_?
+      "Shock to inverse velocity of credit, ?" shock_ivy_?
+      "Shock to Gross Loans to GDP Ratio Trend, ?" shock_l_to_4ny_tnd_?
+
+
+  !parameters
+
+      "Weight on today's output in trn, ?" c1_trn_?
+      "S/S inverse velocity of credit, ?" ss_ivy_?
+      "Persistence of inverse velocity, ?" c0_ivy_?
+      "Elasticity of inverse velocity to credit gap, ?" c1_ivy_?
+      "Elasticity of inverse velocity to lending conditions, ?" c2_ivy_?
+      "Persistence of credit-to-GDP ratio trend, ?" c0_l_to_4ny_tnd_?
+
+
+    !equations
+
+        "Macroeconomic transactions"
+        trn_? = py * ((1 - c1_trn_?) * y + c1_trn_? * fws_y);
+
+
+        "Inverse velocity of new loans"
+        ivy_? = ...
+            + c0_ivy_? * ivy_?{-1} ...
+            + (1-c0_ivy_?) * ss_ivy_? ...
+            - c1_ivy_? * [ l_to_4ny_? - l_to_4ny_tnd_? ] ...
+            - c2_ivy_? * new_rl_full_gap_? ...
+            + shock_ivy_? ...
+            + shock_ivy ...
+        !! ivy_? = ss_ivy_?;
+
+
+        "New credit creation"
+        log(new_l_?) = ...
+            + log(ivy_? * trn_?) ...
+            + shock_new_l_? ...
+            + shock_new_l ...
+        !! new_l_? = ss_ivy_? * trn_?;
+
+
+        "Gross loans to GDP ratio trend"
+        l_to_4ny_tnd_? = ...
+            + c0_l_to_4ny_tnd_? * l_to_4ny_tnd_?{-1} ...
+            + (1 - c0_l_to_4ny_tnd_?) * &l_to_4ny_? ...
+            + shock_l_to_4ny_tnd_? ...
+        !! l_to_4ny_tnd_? = l_to_4ny_?;
+
+
+        "New loans to GDP ratio"
+        new_l_to_4ny_? = new_l_?/(4*ny);
+
+
+        "New loans to total loans ratio"
+        new_l_to_l_? = new_l_? / l_?;
+
+!end
+
