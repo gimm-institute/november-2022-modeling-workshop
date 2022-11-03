@@ -1,0 +1,13 @@
+
+title: Time series modeling
+
+nav:
+    - "index.md"
+    - "@VAR"
+    - "@SVAR"
+    - "PanelVAR"
+    - "@Dynafit"
+    - "@Armani"
+    - "@ParamArmani"
+    - "+x13"
+
