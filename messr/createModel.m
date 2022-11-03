@@ -27,11 +27,10 @@ modelFiles = [ ...
 % how many loan segments we create
 numSegments = 1;
 
-m = Model.fromFile( ...
+m = Model( ...
     modelFiles ...
-    , "assign", struct("K", numSegments, "onlyMacro", false) ...
+    , "assign", struct('K', numSegments, 'onlyMacro', false) ...
     , "growth", true ...
-    , "saveAs", "parsed.model" ...
 );
 
 
@@ -47,12 +46,12 @@ p = calibrate.macro(p);
 p.ss_ivy_1 = 1; % S/S inverse velocity of credit 
 % p.ss_ivy_2 = 1; % S/S inverse velocity of credit
 
-p.c1_trn_1 = 0.5; % weight on today's output in trn
+p.c1_trn_1 = 0.65; % weight on today's output in trn
 % p.c1_trn_2 = 0.5; % weight on today's output in trn
 
 p.c0_ivy_1 = 0.85; % persistence
 p.c1_ivy_1 = 0.20; % loan-to-GDP trend
-p.c2_ivy_1 = 4*1.1; % lending conditions
+p.c2_ivy_1 = 0.5; % lending conditions
 
 % p.c0_ivy_2 = 0.85; % persistence
 % p.c1_ivy_2 = 0.05; % loan-to-GDP trend
@@ -98,7 +97,7 @@ p.ss_roae_apm = 1.0/400;
 
 p.ss_rsec_apm = 0.3/400;
 
-p.psi_rl1_1 = 0.5;
+p.psi_rl1_1 = 0.15;
 p.psi_rl2_1 = 1/(2);
 
 

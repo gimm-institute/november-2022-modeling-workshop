@@ -27,7 +27,7 @@ ch.PlotSettings = {"lineWidth", 2, "marker", ".", "markerSize", 6};
 
 %% Introduce a simple negative demand shock that worsens credit performance
 
-dbinit.shock_y_gap(1) = -0.02; % significant, 4pp shock into output gap
+dbinit.shock_y_gap(1) = -0.02; % significant, 2pp shock into output gap
 
 
 s1 = simulate( ...
@@ -53,7 +53,7 @@ s2 = simulate( ...
 ch < "Output gap: 100*(y_gap - 1)";
 ch < "Credit risk (portfolio default rates): 100*q";
 ch < "Macro conditions index: 100*z_1";
-ch < "NPL ratio: 100*ln/l";
+ch < "NPL ratio: 100*ln_to_l";
 
 draw(ch, s1 & s2 & dbinit);
 
@@ -63,6 +63,7 @@ draw(ch, s1 & s2 & dbinit);
 
 ch < "Allowances (stock): a";
 ch < "Allowances-to-NPLs: a/ln";
+ch < "Allowances IFRS9 (stock): a9";
 
 
 draw(ch, s1 & s2 & dbinit);

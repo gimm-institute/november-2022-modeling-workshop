@@ -10,7 +10,7 @@ load mat/createModel.mat m
 d = steadydb(m,1:40);
 
 d.shock_roc_y_tnd(8) = 3/100;    % expected positive shock
-% d.shock_xcf_to_bk(1:7) = -0.01;
+d.shock_xcf_to_bk(1:7) = -0.015;
 
 s = simulate( ...
     m, d, 1:40 ...
@@ -44,12 +44,12 @@ ch.Range = 0:20;
 ch.TitleSettings = {"interpreter", "none"}; 
 ch.ShowFormulas = true;
 ch.PlotSettings = {"lineWidth", 2, "marker", ".", "markerSize", 6};
-ch.Highlight = 0:8;
+ch.Highlight = 0:7;
 
 ch < "Output gap: 100*(y_gap - 1)";
 ch < "Forward output: 100*(fws_y - 1)";
 ch < "Potential growth, PA: 400*(roc_y_tnd-1)";
-ch < "Real bank loans: 100*(l / py - 1)";
+ch < "Credit-to-GDP: 100*l_to_4ny";
 ch < "Real new bank loans: 100*(new_l / py - 1)";
 ch < "Credit risk (portfolio default rates): 100*q";
 ch < "Lending conditions: 400*new_rl_full_gap";

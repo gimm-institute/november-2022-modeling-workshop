@@ -5,7 +5,7 @@ function p = macro(p)
     p.ss_rp = 1/400;
 
     p.c0_y_gap = 0.65;
-    p.c1_y_gap = 4*0.10;
+    p.c1_y_gap = 4*0.075;
     p.c0_roc_cpi = 0.50;
     p.c0_roc_y_tnd = 0.85;
     p.c0_rp = 0.90;
