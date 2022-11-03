@@ -62,3 +62,20 @@ reportSimulation( ...
 );
 
 
+list = [
+    "yw_gap"
+    "rw"
+    "rrw_tnd"
+    "roc_cpiw"    
+    "y_gap"
+    "roc_y_tnd"
+    "roc_cpi"
+    "e"
+    "r"
+    "rr_tnd"
+    "roc_re_tnd"
+];
+
+baseline = databank.copy(h, "sourceNames", list);
+databank.toSheet(baseline, "baseline.csv");
+
