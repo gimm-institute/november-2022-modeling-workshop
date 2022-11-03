@@ -13,7 +13,7 @@ macro = byAttributes(m, [":macro", ":world"]);
 
 m = rescaleStd(m, 0);
 
-m.std_shock_rrw_tnd = 0.001;
+m.std_shock_rrw_tnd = 0.00;
 
 m.std_shock_yw_gap = 0.01;
 m.std_shock_roc_cpiw = 0.01;
@@ -41,7 +41,7 @@ m = rescaleStd(m, 0.5);
 startHist = qq(2015,1);
 endHist = qq(2022,2);
 
-rng(8);
+rng(0);
 
 d = databank.forModel(m, startHist:endHist, "shockFunc", @randn);
 
@@ -55,8 +55,10 @@ h = simulate( ...
 
 %% Create HTML report
 
+d.e(:) = NaN;
+
 reportSimulation( ...
-    "html/history", h, startHist:endHist, "History", qq(2019,1):qq(2021,4) ...
+    "html/history", databank.merge("horzcat", h, d), startHist:endHist, ["History", "Steady"], [] ...
 );
 
 

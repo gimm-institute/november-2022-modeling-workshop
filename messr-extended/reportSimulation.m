@@ -7,6 +7,7 @@ function reportSimulation(fileName, db, range, legend, highlightRange)
         "Foreign demand gap, %", 100*(db.yw_gap-1)
         "Foreign short-term rate, % PA", 400*db.rw
         "Foreign CPI Q/Q PA", apct(db.cpiw) 
+        "Foreign real short-term rate trend, % PA", 400*db.rrw_tnd
     };
 
     content("Macroeconomy") = {
