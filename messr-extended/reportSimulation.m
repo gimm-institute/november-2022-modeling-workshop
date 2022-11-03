@@ -44,7 +44,7 @@ function reportSimulation(fileName, db, range, legend, highlightRange)
 
         G = rephrase.Grid(topic, [], 2, "pass", {"dateFormat", "YYYY-Q", "round", 4, "highlight", H});
 
-        for i = 1 : height(content(topic))
+        for i = 1 : size(content(topic), 1)
             x = content(topic);
             title = x{i, 1};
             series = x{i, 2};
