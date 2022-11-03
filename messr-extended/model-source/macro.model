@@ -120,6 +120,8 @@
     "Tune on short term cash rate, LCY" tune_r
     "Tune on autonomous cyclical component in interest disparity" tune_prem_gap
     "Tune on real short-term rate trend" tune_rr_tnd
+    "Tune on nominal exchange rate" tune_e
+    "Tune on real exchange rate trend" tune_roc_re_tnd
 
 
     "Shock to GDP gap" shock_y_gap
@@ -269,7 +271,7 @@
 % Exchange Rate
 
     "Uncovered interest parity"
-    (1 + r) = (1 + rw) * e_exp/e * (1 + prem) * exp(shock_e + cx_e * x) ...
+    (1 + r) = (1 + rw) * e_exp/e * (1 + prem) * exp(shock_e + tune_e + cx_e * x) ...
     !! roc_e = $ss_roc_e$;
 
 
@@ -312,6 +314,7 @@
         + (1 - c0_roc_re_tnd) * log(ss_roc_re) ...
         + c1_roc_re_tnd * log(re_gap) ...
         + shock_roc_re_tnd ...
+        + tune_roc_re_tnd ...
     !! roc_re_tnd = ss_roc_re;
 
 
