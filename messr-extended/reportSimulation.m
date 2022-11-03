@@ -6,17 +6,17 @@ function reportSimulation(fileName, db, range, legend, highlightRange)
     content("External") = {
         "Foreign demand gap, %", 100*(db.yw_gap-1)
         "Foreign short-term rate, % PA", 400*db.rw
-        "Foreign CPI Q/Q PA", apct(db.cpiw) 
+        "Foreign CPI Q/Q PA", 100*(db.roc_cpiw^4-1) 
         "Foreign real short-term rate trend, % PA", 400*db.rrw_tnd
     };
 
     content("Macroeconomy") = {
-        "GDP, Q/Q PA", apct(db.y)
+        "GDP, Q/Q PA", 100*(db.roc_y^4-1)
         "GDP gap, %", 100*(db.y_gap-1)
-        "Potential GDP, % PA", apct(db.y_tnd)
+        "Potential GDP, % PA", 100*(db.roc_y_tnd^4-1)
         "Short-term rate, % PA", 400*db.r
-        "CPI Q/Q PA", apct(db.cpi) 
-        "GDP deflator Q/Q PA", apct(db.py) 
+        "CPI Q/Q PA", 100*(db.roc_cpi^4-1)
+        "GDP deflator Q/Q PA", 100*(db.roc_py^4-1) 
         "Nominal exchange rate", db.e
         "Real exchange rate gap", 100*(db.re_gap-1)
     };
