@@ -1,0 +1,12 @@
+**/~*/*
+*.mat
+_idt
+_header
+.release/*
+.temp
+*.asv
+test.sh
+.template.md
+
+.*.md
+*.*~
