@@ -56,6 +56,7 @@ ch < "Short-term policy rate // Pp deviations: ^400*r";
 ch < "CPI inflation Q/Q PA // Pp deviations: roc_cpi^4"; 
 ch < "Nominal exchange rate // Pct level deviations: e";
 ch < "Credit to GDP ratio // Pp deviations: ^100*l_to_4ny_hh";
+ch < "Sustainable credit to GDP ratio // Pp deviations: ^100*l_to_4ny_tnd_hh";
 ch < "New real credit // Pct level deviations: new_l_hh/cpi";
 
 ch < "//";
@@ -63,6 +64,7 @@ ch < "//";
 ch < "Credit conditions // Pp deviations PA: ^400*new_rl_full_spread_gap";
 ch < "Portfolio defaults // Pp deviations: ^100*q_hh";
 ch < "Stock lending rates // PP deviations PA: ^400*rl_hh";
+ch < "New (flow) lending rates // PP deviations PA: ^400*new_rl_hh";
 ch < "Cost of bank capital // Pp deviations PA: ^400*rx";
 ch < "CAR // Pp deviations: ^100*car";
 

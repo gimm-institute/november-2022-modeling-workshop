@@ -25,8 +25,8 @@ x.c5_y_gap = 0.60; 0.10; % Foreign demand
 
 
 % Potential output
-x.c0_roc_y_tnd = 0.90; % Autoregression
-x.c1_roc_y_tnd = 0.005; % Error correction response to GDP gap
+x.c0_roc_y_tnd = 0.95; % Autoregression
+x.c1_roc_y_tnd = 0.003; % Error correction response to GDP gap
 
 
 % Forward output

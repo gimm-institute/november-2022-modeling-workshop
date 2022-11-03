@@ -131,5 +131,5 @@ drawCapitalAdequacyRiskFunc(axesH, m, ss.car_min);
 plot(axesH, ss.car*100, ss.rx*400, "lineStyle", "none", "marker", "s", "markerSize", 10);
 
 [~, minH] = drawCapitalAdequacyRiskFunc(axesH, m, m.car_min+2.5/100);
-set(minH, "visible", "off");
+%set(minH, "visible", "off");
 
