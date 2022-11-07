@@ -19,6 +19,7 @@ function reportSimulation(fileName, db, range, legend, highlightRange)
         "GDP deflator Q/Q PA", 100*(db.roc_py^4-1) 
         "Nominal exchange rate", db.e
         "Real exchange rate gap", 100*(db.re_gap-1)
+        "Real interest rate gap", 400*db.rr_gap
     };
 
     content("Bank credit") = {
@@ -30,6 +31,31 @@ function reportSimulation(fileName, db, range, legend, highlightRange)
         "New real credit Q/Q PA", apct(db.new_l/db.py)
     };
 
+    content("Interest rates") = {
+        "Policy rate", 400*db.r
+        "Lending conditions", 400*db.new_rl_full_spread_gap
+        "Stock lending rates", 400*db.rl_hh
+        "New lending rates", 400*db.new_rl_hh
+        "Stock funding rates", 400*db.rd_lcy
+        "New funding rates", 400*db.new_rd_lcy
+        "Return on other assets", 400*db.rona
+    };
+
+    content("Bank profits/capital") = {
+        "CAR", 100*db.car
+        "Excess CAR", 100*(db.car-db.car_min)
+        "Return on bank capital", 400*db.rbk
+    };
+
+    
+    content("Loan performance") = {
+        "Porfolio default rates", 100*db.q
+        "NPL to gross loans", 100*db.ln/db.l
+        "Bkw allowances", db.ap
+        "Bkw allowances to gross loans", 100*db.ap/db.l
+    };
+
+
     R = rephrase.Report("MESSr simulation report");
 
     P = rephrase.Pager("");
@@ -40,7 +66,7 @@ function reportSimulation(fileName, db, range, legend, highlightRange)
         H = rephrase.Highlight(highlightRange(1), highlightRange(end));
     end
 
-    for topic = ["External", "Macroeconomy", "Bank credit"]
+    for topic = ["External", "Macroeconomy", "Bank credit", "Interest rates", "Bank profits/capital", "Loan performance"]
 
         G = rephrase.Grid(topic, [], 2, "pass", {"dateFormat", "YYYY-Q", "round", 4, "highlight", H});
 

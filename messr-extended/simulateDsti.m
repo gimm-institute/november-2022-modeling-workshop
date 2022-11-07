@@ -29,7 +29,7 @@ m.c2_ivy_hh = 2;
 m = steady(m);
 checkSteady(m);
 m = solve(m);
-d = steadydb(m, -10:40);
+d = databank.forModel(m, -10:40);
 
 
 %% Boom (asset prices, credit demand) with no DSTI caps
@@ -49,7 +49,7 @@ s1 = simulate( ...
 %% Boom with DSTI-like caps
 
 d2 = d1;
-d2.cap_hh(:) = 0.65;
+d2.cap_hh(:) = 0.65; % 2.25/100;
 d2.shock_cap_hh(:) = d2.cap_hh - m.ss_cap_hh;
 
 m.c1_new_rl_full_hh = 0.3;
@@ -117,8 +117,8 @@ visual.hlegend("bottom", "No DTI caps", "DTI caps");
 %% Plot new loans to GDP
 
 figure();
-h = plot(0:40, [s.new_l_to_ny, s.cap_hh{:, 2}], "marker", "s");
+h = plot(0:40, [s.new_l_to_ny_hh, s.cap_hh{:, 2}], "marker", "s");
 set(h(3), "color", 0.5*[1,1,1], "lineWidth", 5, "marker", "none");
-title("New loans to GDP ratio");
+title("Debt service to GDP ratio");
 
 

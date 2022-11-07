@@ -186,10 +186,12 @@
             * (1 + cx_new_rl_full * x + cx_new_rl_full_? * x) ...
             * (1 + c1_new_rl_full_?*new_rl_cap_?);
 
+
         new_rl_cap_? = (c1_new_rl_cap_?*max(0, new_l_to_ny_? - cap_?))^2 ...
         !! new_rl_cap_? = 0;
 
         cap_? = ss_cap_? + shock_cap_?;
+
 
         "Actual new lending rates with partial risk, ?"
         new_rl_? = ...
