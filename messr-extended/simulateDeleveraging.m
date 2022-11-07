@@ -158,3 +158,4 @@ for i = 1 : countVariants(m1)
 end
 
 visual.heading("Capital adequacy stress function", 'fontSize',25, 'fontWeight',"bold");
+

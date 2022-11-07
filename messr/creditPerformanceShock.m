@@ -20,6 +20,7 @@ dbinit = steadydb(m, 1:40);
 
 ch = databank.Chartpack();
 ch.Range = 0:20;
+ch.Round = 8;
 ch.TitleSettings = {"interpreter", "none"}; 
 ch.ShowFormulas = true;
 ch.PlotSettings = {"lineWidth", 2, "marker", ".", "markerSize", 6};
